@@ -1,44 +1,44 @@
 <?php
 /**
- * PDF Text
+ * DOC Text
  * 
- * @copyright Copyright 2007-2012 Roy Rosenzweig Center for History and New Media
+ * @copyright Copyright 2013 Regents of the University of Minnesota
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
  */
 
 /**
- * @package Omeka\Plugins\PdfText
+ * @package Omeka\Plugins\DocText
  */
-class PdfTextProcess extends Omeka_Job_AbstractJob
+class DocTextProcess extends Omeka_Job_AbstractJob
 {
     /**
-     * Process all PDF files in Omeka.
+     * Process all DOC files in Omeka.
      */
     public function perform()
     {
-        $pdfTextPlugin = new PdfTextPlugin;
+        $docTextPlugin = new DocTextPlugin;
         $fileTable = $this->_db->getTable('File');
 
         $select = $this->_db->select()
             ->from($this->_db->File)
-            ->where('mime_type IN (?)', $pdfTextPlugin->getPdfMimeTypes());
+            ->where('mime_type IN (?)', $docTextPlugin->getDocMimeTypes());
 
-        // Iterate all PDF file records.
+        // Iterate all DOC file records.
         $pageNumber = 1;
         while ($files = $fileTable->fetchObjects($select->limitPage($pageNumber, 50))) {
             foreach ($files as $file) {
 
-                // Delete any existing PDF text element texts from the file.
+                // Delete any existing DOC text element texts from the file.
                 $textElement = $file->getElement(
-                    PdfTextPlugin::ELEMENT_SET_NAME,
-                    PdfTextPlugin::ELEMENT_NAME
+                    DocTextPlugin::ELEMENT_SET_NAME,
+                    DocTextPlugin::ELEMENT_NAME
                 );
                 $file->deleteElementTextsByElementId(array($textElement->id));
 
-                // Extract the PDF text and add it to the file.
+                // Extract the DOC text and add it to the file.
                 $file->addTextForElement(
                     $textElement,
-                    $pdfTextPlugin->pdfToText(FILES_DIR . '/original/' . $file->filename)
+                    $docTextPlugin->docToText(FILES_DIR . '/original/' . $file->filename)
                 );
                 $file->save();
 
